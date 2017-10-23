@@ -3,6 +3,7 @@ package project;
  * @author Edgar Morales
  *
  */
+//we can have tokens, identifiers, integers, strings, or empty code
 public enum TokenType {
 	/** A token, for example: () " , */
 	TOKEN,
@@ -14,5 +15,8 @@ public enum TokenType {
 	INTEGER_LITERAL,
 	
 	/** Anything enclosed in double quotes */
-	STRING_LITERAL
+	STRING_LITERAL,
+	
+	/**Empty String**/
+	EMPTY
 }
