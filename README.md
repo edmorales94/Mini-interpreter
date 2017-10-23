@@ -1,4 +1,4 @@
-# Mini-interpreter-
+# Mini-interpreter
 able to do the following for a given program: 
   (1) detect syntax errors; 
   (2) report uninitialized variables; and 
