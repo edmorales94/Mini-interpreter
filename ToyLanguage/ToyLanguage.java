@@ -1,7 +1,7 @@
 package ToyLanguage;
 
 import java.util.ArrayList;
-//import java.util.Arrays;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,7 +27,7 @@ public class ToyLanguage {
 		for(int i = 0; i < data.length(); i++) { //Loop through the whole input
 			characters[i] = String.valueOf(data.charAt(i));//get the character at the specific location and cast it to string. Then add it to the array
 		}
-		//System.out.println(Arrays.toString(characters));
+		System.out.println("characters: " + Arrays.toString(characters) + "\n");
 		return characters;
 	}
 	
@@ -57,7 +57,7 @@ public class ToyLanguage {
 			else if(token.equalsIgnoreCase("\n") || token.equalsIgnoreCase(";")) {//in case we find a new line or semicolon
 				if(isAnExpression && numericalExpression.equalsIgnoreCase("") == false) {//if we have a mathematical expression and numericalExpression is not empty
 					//System.out.print("Numerical Expression: " + numericalExpression);
-					tokens.add("Express: " + numericalExpression);//add the exact mathematical expression
+					tokens.add("Expres: " + numericalExpression);//add the exact mathematical expression
 					tokens.add("Semico: " + token);//since token is a ; we added it after the expression
 					numericalExpression = "";//we clear the expression for a possible next new expression
 				}
@@ -140,7 +140,7 @@ public class ToyLanguage {
 			}
 		}
 				
-		System.out.println(tokens);
+		System.out.println("tokens: " + tokens + "\n");
 		return tokens;
 	}
 
@@ -185,9 +185,10 @@ public class ToyLanguage {
  * @param variableName
  * @param variableValue
  */
-	public void assignVariable(String variableName, String variableValue) {
-		System.out.println("Variable name: " + variableName + ", Variable value: " + variableValue);
-		symbolTable.put(variableName, variableValue);
+	public static synchronized void assignVariable(String variableName, String variableValue) {
+		//System.out.println("Variable name: " + variableName.substring(8) + ", Variable value: " + variableValue);
+		symbolTable.put(variableName.substring(8), variableValue);
+		//we save varibles in a hashtable in case a variable is set equal to another variable
 	}
 	
 /*******************************************************************************************************************************************************************
@@ -195,7 +196,7 @@ public class ToyLanguage {
  * @param varibleName
  * @return valueOfVariableRequested
  */
-	public String getVariableValueOf(String varibleName) {
+	public static String getVariableValueOf(String varibleName) {
 		String value = "";//value will be stored here
 		for(String key: symbolTable.keySet()) {//get the keys(variableNames) stored in the hashtable
 			if(varibleName.equals(key)) {//if the variableName requested is in the hashatable
@@ -209,13 +210,61 @@ public class ToyLanguage {
 		return value;//return the value found 
 	}
 	
+/*******************************************************************************************************************************************************************
+ * This method will go through the list of tokens and save the variables with their values depending on their value type
+ * @param listOfTokens
+ */
+	public static void parse(ArrayList<String> listOfTokens) {
+		int i = 0;
+		while(i < listOfTokens.size()-1) {//loop through the list of tokens
+			//get specific keywords in the list of tokens so we can find out how to assign variables to the hashtable 
+			String keyWords = listOfTokens.get(i).substring(0, 6) + " " + listOfTokens.get(i+1) + " " + listOfTokens.get(i+2).substring(0, 6);
+			//System.out.println(keyWords);
+			
+			//There are the specific keywords that can be used to help determine how to proceed
+			if(keyWords.equalsIgnoreCase("variab equals number") || keyWords.equalsIgnoreCase("variab equals string") || 
+					keyWords.equalsIgnoreCase("variab equals expres") || keyWords.equalsIgnoreCase("variab equals variab")) {
+				
+				if(keyWords.substring(14).equalsIgnoreCase("string")) {
+					assignVariable(listOfTokens.get(i), listOfTokens.get(i+2).substring(8));
+					//System.out.println("String was added");
+				}
+				
+				else if(keyWords.substring(14).equalsIgnoreCase("number")) {
+					assignVariable(listOfTokens.get(i), listOfTokens.get(i+2).substring(8));
+					//System.out.println("Number was added");
+				}
+				
+				if(keyWords.substring(14).equalsIgnoreCase("expres")) {
+					assignVariable(listOfTokens.get(i), evaluateExpression(listOfTokens.get(i+2).substring(8)));
+					//System.out.println("Expression was added");
+				}
+				
+				if(keyWords.substring(14).equalsIgnoreCase("variab")) {
+					assignVariable(listOfTokens.get(i), getVariableValueOf((listOfTokens.get(i+2).substring(8))));
+					//System.out.println("Variable was added");
+				}
+				i += 2;
+			}
+			i++;
+		}
+		System.out.println("symbolTable: " + symbolTable);
+	}
+	
 //---main-----------------------------------------------------------------------------------------------------------------------------------------------------------
 	public static void main(String[] args) throws ScriptException {
-		String data = "$myVariable = 345;"
+		/*String data = "$myVariable = 345;"
 				+ "$myVarible2 = (10+2)*4;"
-				+ "$myVariable3 = 5 + 10(-3+7);";
-		tokenizer(data);
-		System.out.println(evaluateExpression("---(1+2)*(1-+2)"));
+				+ "$myVariable3 = 5 + 10*(-3+7);";
+		parse(tokenizer(data));
+		//System.out.println(evaluateExpression("---(1+2)*(1-+2)"));*/
+		String data = "$myVariable = \"sup\";"
+				+     "$var = 345;"
+				+     "$x = 12;"
+				+     "$y = (10+2) * 4;"
+				+     "$variable2 = $var;"
+				+     "$variable = $x;";
+		parse(tokenizer(data));
 	}
 
 }
