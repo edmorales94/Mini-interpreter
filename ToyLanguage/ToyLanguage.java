@@ -61,115 +61,110 @@ public class ToyLanguage {
 					tokens.add("Semico: " + token);//since token is a ; we added it after the expression
 					numericalExpression = "";//we clear the expression for a possible next new expression
 				}
-				else if(numericalExpression.equals("") == false && !(isAnExpression)) {
+				else if(numericalExpression.equals("") == false && !(isAnExpression)) {//if we didn't detect an expression, then it's just a single number
 					//System.out.print("Number: " + numericalExpression);
 					tokens.add("Number: " + numericalExpression);
-					tokens.add("Semico: " + token);
-					numericalExpression = "";
+					tokens.add("Semico: " + token);//since token is a ; we added it after the number
+					numericalExpression = "";//we clear the expression for a possible next new expression
 				}
-				else if(variableName.equalsIgnoreCase("") == false) {
+				else if(variableName.equalsIgnoreCase("") == false) {//if we don't have an empty variableName
 					//System.out.print("Variab: " + variableName);
-					tokens.add("Variab: " + variableName);
-					variableName = "";
-					possibleVariable = false;
+					tokens.add("Variab: " + variableName);//add variableName to the tokens list
+					tokens.add("Semico: " + token);//since token is a ; we added it after the variableName(not initialized variable)
+					variableName = "";//restart the variableName
+					possibleVariable = false;//restart the condition
 				}
-				token = "";	
+				token = "";	//restart the token so we can get a different sequence of characters
 			}
 			
-			else if(token.equalsIgnoreCase("=") && state == 0) {
-				if(variableName.equalsIgnoreCase("") == false){
-					tokens.add("Variab: " + variableName);
-					variableName = "";
+			else if(token.equalsIgnoreCase("=") && state == 0) {//if the token is =, and we haven't found a variable value yet
+				if(variableName.equalsIgnoreCase("") == false){// if the variable name is not empty
+					tokens.add("Variab: " + variableName);//add the variable name since token is a =, this variable is getting initialized
+					variableName = "";//restart the variable 
 				}
-				tokens.add("EQUALS");
-				token = "";
-				possibleVariable = false;
+				tokens.add("EQUALS");//add the = token to the list
+				token = "";//restart token for a new character sequence
+				possibleVariable = false;//restart the condition for a new upcoming variable
 			}
 			
-			else if(token.equalsIgnoreCase("$") && state == 0) {
-				possibleVariable = true;
-				variableName += token;
-				token = "";
+			else if(token.equalsIgnoreCase("$") && state == 0) {//if token is a $, and no string value for a variable is found
+				possibleVariable = true;//this is to signal we have found an  upcoming variable
+				variableName += token;//append the $ that belong from the incoming variable to the variableName holder 
+				token = "";//update the token
 			}
 			
-			else if(possibleVariable) {
-				Pattern pattern = Pattern.compile("^([a-zA-Z]|[0-9])");
-				Matcher matcher = pattern.matcher(token);
-				if(matcher.find()) {
-					variableName += token;
-					token = "";
+			else if(possibleVariable) {//if we reeived the signal of an upcoming variable
+				Pattern pattern = Pattern.compile("^([a-zA-Z]|[0-9]|_)");//variable name needs to contain letters and numbers(optional) or a _(optional)
+				Matcher matcher = pattern.matcher(token);//Try to find matches of any of the variableName conditons: letter,number, underscore
+				if(matcher.find()) {//if the token matches any of the requirements
+					variableName += token;//add that token to the variableName holder
+					token = "";//restart token for new upcoming characters
 				}
-				else {
-					//token = token;
+				/*else {
+					token = token;
 					if(token.equalsIgnoreCase(" ")) {
 						token = "";
 					}
 					possibleVariable = false;
-				}
+				}*/
 			}
 			
-			else if(token.equalsIgnoreCase("0")||token.equalsIgnoreCase("1")||token.equalsIgnoreCase("2")||
-					token.equalsIgnoreCase("3")||token.equalsIgnoreCase("4")||token.equalsIgnoreCase("5")||
-					token.equalsIgnoreCase("6")||token.equalsIgnoreCase("7")||token.equalsIgnoreCase("8")||
-					token.equalsIgnoreCase("9")) {
-				numericalExpression += token;
-				token = "";
+			//if the token is a number
+			else if(token.equals("0")||token.equals("1")||token.equals("2")||token.equals("3")||token.equals("4")||token.equals("5")||
+					token.equals("6")||token.equals("7")||token.equals("8")||token.equals("9")) {
+				numericalExpression += token;//add that number to the expression holder
+				token = "";//restar the token
 			}
 			
-			else if(token.equalsIgnoreCase("+")||token.equalsIgnoreCase("-")|token.equalsIgnoreCase("*")||
-					token.equalsIgnoreCase("(")||token.equalsIgnoreCase(")")) {
-				isAnExpression = true;
-				numericalExpression += token;
-				token = "";
+			else if(token.equals("+")||token.equals("-")|token.equals("*")||token.equals("(")||token.equals(")")) { //This'll signal we have a mathematical expres.
+				isAnExpression = true;//update the flag
+				numericalExpression += token;//add token to the numerical expression
+				token = "";//restart token
 			}
 			
 			else if(token.equalsIgnoreCase("\"")) {
-				if(state == 0) {//found a keyword, variable, etc
-					state = 1;
+				if(state == 0) {//if we're still on a keyword, variable, etc but found a " mark
+					state = 1;//update state, we got an upcoming string
 				}
-				else if(state == 1) {
-					tokens.add("String: " + string + "\"");
-					state = 0;
-					string = "";
-					token = "";
+				else if(state == 1) {//if we are already in the string found state and found another ", then string is finished
+					tokens.add("String: " + string + "\"");//add the string plus the last " mark
+					state = 0;//restart the state
+					string = "";//restart the string holder
+					token = "";//restart the token
 				}
 			}
 			
-			else if(state == 1) {
-				string += token;
-				token = "";
+			else if(state == 1) {//if we get the signal for an upcoming string
+				string += token;//add its characters to the string holder
+				token = "";//update the token
 			}
 		}
-		
-		System.out.print("[");
-		for(int i = 0; i < tokens.size(); i++) {
-			if(i == tokens.size()-1) {
-				System.out.print(tokens.get(i));
-			}
-			else {
-				System.out.print(tokens.get(i) + ", ");
-			}
-		}
-		System.out.println("]");
+				
+		System.out.println(tokens);
 		return tokens;
 	}
 
+/*******************************************************************************************************************************************************************
+ * This method will evalute the expression, do the mathematical operations, and return the result
+ * @param String expression
+ * @return String resultObtainedFromExpression
+ */
 	public static String evaluateExpression(String expression){
-		String finalExpression = "";
-		for(int i = 0; i < expression.length()-1; i ++) {
-			String currentElement = String.valueOf(expression.charAt(i));
-			String nextElement = String.valueOf(expression.charAt(i+1));
-			if(currentElement.equalsIgnoreCase("-") && nextElement.equalsIgnoreCase("-")) {
-				finalExpression += currentElement +"1*";
+		String finalExpression = "";//holder used to place the corrected sintax of the expression
+		for(int i = 0; i < expression.length()-1; i ++) {//loop through the first element to the second to last so we dont get out of range
+			String currentElement = String.valueOf(expression.charAt(i));//get current element in the expression
+			String nextElement = String.valueOf(expression.charAt(i+1));//get the next element 
+			if(currentElement.equals("-") && nextElement.equals("-")) {//if we get two continuous --, then we have a multiplication of two -1's
+				finalExpression += currentElement +"1*";//updating with the correct syntax
 			}
-			else if(currentElement.equalsIgnoreCase("+") && nextElement.equalsIgnoreCase("+")) {
-				finalExpression += currentElement +"1*";
+			else if(currentElement.equals("+") && nextElement.equals("+")) {//if we get two continuous ++, then we have a multiplication of two +1's
+				finalExpression += currentElement +"1*";//updating with the correct syntax
 			}
-			else {
-				finalExpression += String.valueOf(currentElement);
+			else {//sintax is correct 
+				finalExpression += String.valueOf(currentElement);//update the finalExpression holder
 			}
 		}
-		finalExpression += expression.substring(expression.length()-1);
+		finalExpression += expression.substring(expression.length()-1);//add the last element we left out in order to avoid an out of range situation
 		//System.out.println("This is final Exp: " + finalExpression);
 		ScriptEngineManager manager = new ScriptEngineManager();
 		ScriptEngine engine = manager.getEngineByName("js");
@@ -204,7 +199,8 @@ public class ToyLanguage {
 	
 	public static void main(String[] args) throws ScriptException {
 		String data = "$myVariable = 345;"
-				+ "$myVarible2 = (10+2)*4;";
+				+ "$myVarible2 = (10+2)*4;"
+				+ "$myVariable3 = 5 + 10(-3+7);";
 		tokenizer(data);
 		System.out.println(evaluateExpression("---(1+2)*(1-+2)"));
 	}
