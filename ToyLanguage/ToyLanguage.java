@@ -166,37 +166,50 @@ public class ToyLanguage {
 		}
 		finalExpression += expression.substring(expression.length()-1);//add the last element we left out in order to avoid an out of range situation
 		//System.out.println("This is final Exp: " + finalExpression);
+		
+		//built-in fuctions needed to evaluate the expression
 		ScriptEngineManager manager = new ScriptEngineManager();
 		ScriptEngine engine = manager.getEngineByName("js");
 		Object result = null;
 		try {
 			result = engine.eval(finalExpression);
-		} catch (ScriptException e) {
+		} 
+		catch (ScriptException e) {
 			System.out.println("Expression Sintax error");;
 		}
 		return result.toString();
 	}
 
+/*******************************************************************************************************************************************************************
+ * This method will place the variable with its value in the symbolTable Hashtable
+ * @param variableName
+ * @param variableValue
+ */
 	public void assignVariable(String variableName, String variableValue) {
 		System.out.println("Variable name: " + variableName + ", Variable value: " + variableValue);
 		symbolTable.put(variableName, variableValue);
 	}
 	
-	public String getVariableValue(String varibleName) {
-		String value = "";
-		for(String key: symbolTable.keySet()) {
-			if(varibleName.equals(key)) {
-				value = symbolTable.get(varibleName);
-				break;
+/*******************************************************************************************************************************************************************
+ * This method will return the value of a variable stored in the symbolTable if it was saved there.
+ * @param varibleName
+ * @return valueOfVariableRequested
+ */
+	public String getVariableValueOf(String varibleName) {
+		String value = "";//value will be stored here
+		for(String key: symbolTable.keySet()) {//get the keys(variableNames) stored in the hashtable
+			if(varibleName.equals(key)) {//if the variableName requested is in the hashatable
+				value = symbolTable.get(varibleName);//save its value in the value holder
+				break;//break from the for loop
 			}
 			else {
-				value = "Variable Error";
+				value = "Variable Error";//variable requested was not found 
 			}
 		}
-		return value;
+		return value;//return the value found 
 	}
 	
-	
+//---main-----------------------------------------------------------------------------------------------------------------------------------------------------------
 	public static void main(String[] args) throws ScriptException {
 		String data = "$myVariable = 345;"
 				+ "$myVarible2 = (10+2)*4;"
