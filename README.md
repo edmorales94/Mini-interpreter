@@ -47,7 +47,7 @@ Input 2
 x_2 = 0;
 
 Output 2
-error
+x_2 = 0
 
 Input 3
 x = 1;
