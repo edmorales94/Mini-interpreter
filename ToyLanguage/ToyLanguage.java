@@ -100,13 +100,11 @@ public class ToyLanguage {
 					variableName += token;//add that token to the variableName holder
 					token = "";//restart token for new upcoming characters
 				}
-				/*else {
-					token = token;
-					if(token.equalsIgnoreCase(" ")) {
-						token = "";
-					}
+				else {
+					System.out.println("Improper character for a variable name: " + token);
+					System.out.println("This is an invalid variable name syntax: " + variableName + token);
 					possibleVariable = false;
-				}*/
+				}
 			}
 			
 			//if the token is a number
@@ -185,7 +183,7 @@ public class ToyLanguage {
  * @param variableName
  * @param variableValue
  */
-	public static synchronized void assignVariable(String variableName, String variableValue) {
+	public static void assignVariable(String variableName, String variableValue) {
 		//System.out.println("Variable name: " + variableName.substring(8) + ", Variable value: " + variableValue);
 		symbolTable.put(variableName.substring(8), variableValue);
 		//we save varibles in a hashtable in case a variable is set equal to another variable
@@ -216,39 +214,62 @@ public class ToyLanguage {
  */
 	public static void parse(ArrayList<String> listOfTokens) {
 		int i = 0;
+		Pattern pattern = Pattern.compile("^([$][a-zA-Z_])[a-zA-Z_0-9]*$");//variable name needs to contain letters and numbers(optional) or a _(optional)
 		while(i < listOfTokens.size()-1) {//loop through the list of tokens
 			//get specific keywords in the list of tokens so we can find out how to assign variables to the hashtable 
-			String keyWords = listOfTokens.get(i).substring(0, 6) + " " + listOfTokens.get(i+1) + " " + listOfTokens.get(i+2).substring(0, 6);
+			String keyWords = listOfTokens.get(i).substring(0, 6) + " " + listOfTokens.get(i+1) + " " + listOfTokens.get(i+2).substring(0, 6) + " " + listOfTokens.get(i+3).substring(0,6);
 			//System.out.println(keyWords);
-			
 			//There are the specific keywords that can be used to help determine how to proceed
-			if(keyWords.equalsIgnoreCase("variab equals number") || keyWords.equalsIgnoreCase("variab equals string") || 
-					keyWords.equalsIgnoreCase("variab equals expres") || keyWords.equalsIgnoreCase("variab equals variab")) {
+			if(keyWords.equalsIgnoreCase("variab equals number semico") || keyWords.equalsIgnoreCase("variab equals string semico") || 
+					keyWords.equalsIgnoreCase("variab equals expres semico") || keyWords.equalsIgnoreCase("variab equals variab semico")) {
+				Matcher matcher = pattern.matcher(listOfTokens.get(i).substring(8));
 				
-				if(keyWords.substring(14).equalsIgnoreCase("string")) {
-					assignVariable(listOfTokens.get(i), listOfTokens.get(i+2).substring(8));
-					//System.out.println("String was added");
+				if(matcher.matches()) {
+				
+					if(keyWords.substring(14).equalsIgnoreCase("string")) {
+						assignVariable(listOfTokens.get(i), listOfTokens.get(i+2).substring(8));
+						//System.out.println("String was added");
+					}
+					
+					else if(keyWords.substring(14,20).equalsIgnoreCase("number")) {
+						//System.out.println("We have a number to analyse: " + listOfTokens.get(i+2).substring(8));
+						String number  = listOfTokens.get(i+2).substring(8);
+						if(number.length() >= 2) {
+							if(number.startsWith("0")) {
+								System.out.println("Error. This is not an acceptable number syntax: " + number);
+								break;//stop parsing
+							}
+						}
+						System.out.println(listOfTokens.get(i).substring(8) + " = " + number);
+						assignVariable(listOfTokens.get(i), listOfTokens.get(i+2).substring(8));
+						//System.out.println("Number was added");
+					}
+					
+					if(keyWords.substring(14,20).equalsIgnoreCase("expres")) {
+						String solvedExpression = evaluateExpression(listOfTokens.get(i+2).substring(8));
+						System.out.println(listOfTokens.get(i).substring(8) + " = " + solvedExpression);
+						assignVariable(listOfTokens.get(i),solvedExpression);
+						//System.out.println("Expression was added");
+					}
+					
+					if(keyWords.substring(14,20).equalsIgnoreCase("variab")) {
+						String valueOfVariable = getVariableValueOf((listOfTokens.get(i+2).substring(8)));
+						System.out.println(listOfTokens.get(i).substring(8) + " = " + valueOfVariable);
+						assignVariable(listOfTokens.get(i), valueOfVariable);
+						//System.out.println("Variable was added");
+					}
+					i += 3;
 				}
 				
-				else if(keyWords.substring(14).equalsIgnoreCase("number")) {
-					assignVariable(listOfTokens.get(i), listOfTokens.get(i+2).substring(8));
-					//System.out.println("Number was added");
+				else {
+					System.out.println("Incorrect variable name syntax: " + listOfTokens.get(i).substring(8));
+					break;
 				}
-				
-				if(keyWords.substring(14).equalsIgnoreCase("expres")) {
-					assignVariable(listOfTokens.get(i), evaluateExpression(listOfTokens.get(i+2).substring(8)));
-					//System.out.println("Expression was added");
-				}
-				
-				if(keyWords.substring(14).equalsIgnoreCase("variab")) {
-					assignVariable(listOfTokens.get(i), getVariableValueOf((listOfTokens.get(i+2).substring(8))));
-					//System.out.println("Variable was added");
-				}
-				i += 2;
 			}
+			
 			i++;
 		}
-		System.out.println("symbolTable: " + symbolTable);
+		//System.out.println("\nsymbolTable: " + symbolTable);
 	}
 	
 //---main-----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -258,11 +279,11 @@ public class ToyLanguage {
 				+ "$myVariable3 = 5 + 10*(-3+7);";
 		parse(tokenizer(data));
 		//System.out.println(evaluateExpression("---(1+2)*(1-+2)"));*/
-		String data = "$myVariable = \"sup\";"
+		String data = "$variable2 = 0;"
 				+     "$var = 345;"
 				+     "$x = 12;"
 				+     "$y = (10+2) * 4;"
-				+     "$variable2 = $var;"
+				+     "$variable_2 = $var;"
 				+     "$variable = $x;";
 		parse(tokenizer(data));
 	}
